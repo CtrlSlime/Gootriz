@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Goo">
+<meta name="theme-color" content="#cdc2a6">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+<title>Goo</title>
+<style>
+:root{--top:env(safe-area-inset-top,0px);--bot:env(safe-area-inset-bottom,0px);--bg:#cdc2a6;--hi:#ddd4bc;--ink:#4a4948;--mid:#9a9486;--sub:#6f6b5f;--edge:#6b6a70;font-family:"Pixelify Sans",ui-monospace,monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior:none;-webkit-user-select:none;user-select:none;image-rendering:pixelated}
+input,textarea{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;border-radius:0}
+#app{height:100dvh;display:flex;flex-direction:column}
+#hud{flex:none;display:flex;align-items:center;justify-content:space-between;padding:calc(var(--top) + 10px) 18px 6px}
+#hud>*{flex:1}#hud>:first-child{text-align:left}
+.coin{display:inline-block;width:16px;height:24px;border:3px solid var(--mid);border-radius:50%;vertical-align:middle;margin-right:8px}
+#cnt{font-size:24px}
+#hearts{text-align:center;font-size:36px;line-height:1;letter-spacing:3px}
+#hearts i{font-style:normal}#hearts i.x{color:var(--mid)}
+#hearts.bump{animation:bump .3s steps(3)}
+@keyframes bump{50%{transform:translateY(-8px)}}
+#dots{display:flex;gap:10px;justify-content:center;margin-top:6px}
+#dots i{width:12px;height:12px;border-radius:50%;background:var(--ink)}
+.typing-on #dots i{animation:blink .7s steps(2) infinite}
+#dots i:nth-child(2){animation-delay:.15s}#dots i:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.2}}
+#gear{flex:none;width:58px;height:58px;margin-left:auto;border:2px dashed var(--mid);background:none;font-size:22px;color:var(--mid)}
+#tabs{flex:none;display:flex;margin:8px 14px 0}
+.tab{flex:1;border:2px solid var(--mid);border-bottom:0;background:none;color:var(--mid);padding:13px 0 11px;font-size:14px;letter-spacing:1px}
+.tab.on{border-color:var(--ink);color:var(--ink)}
+#panel{flex:1;min-height:0;margin:0 14px calc(var(--bot) + 14px);border:2px solid var(--ink);position:relative;overflow:hidden}
+.view{position:absolute;inset:0;overflow-y:auto;padding:16px;display:none;-webkit-overflow-scrolling:touch}
+.view.on{display:block}
+.ttl{text-align:center;font-size:30px;font-weight:600;letter-spacing:2px;margin:4px 0 18px}
+.sub{color:var(--sub);text-align:center}
+.row,.sq,.srv{background:var(--hi);border:2px solid var(--ink);border-bottom:6px solid var(--edge)}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;margin-bottom:14px;font-size:16px}
+.row:active,.sq:active,.srv:active,.tab:active{transform:translateY(3px);border-bottom-width:3px}
+.t{flex:1;min-width:0}
+.t b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t span{display:block;font-size:13px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n{min-width:26px;text-align:center;padding:2px 6px;background:var(--ink);color:var(--bg);font-size:14px}
+.av{flex:none;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);background-size:cover;background-position:center;color:var(--bg);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.srv{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 4px;min-width:0}
+.srv span{font-size:13px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.srv.on{background:var(--ink);color:var(--bg)}
+.ov{position:fixed;inset:0;z-index:10;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .25s steps(5),visibility 0s .25s}
+.ov.open{transform:none;visibility:visible;transition:transform .25s steps(5)}
+.ch{flex:none;display:flex;align-items:center;gap:12px;padding:calc(var(--top) + 10px) 14px 10px;border-bottom:2px dotted var(--mid)}
+.ch .t b{font-size:20px}
+.sq{width:48px;height:48px;flex:none;font-size:22px;padding:0}
+#msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.m{display:flex;gap:8px;max-width:86%;align-self:flex-start;align-items:flex-end}
+.m.me{align-self:flex-end}
+.m .w{min-width:0}
+.m small{display:block;font-size:12px;color:var(--sub);margin-bottom:3px}
+.m.pop{animation:pop .3s steps(4)}
+@keyframes pop{from{transform:translateY(18px);opacity:0}}
+.b{padding:9px 12px;font-size:17px;line-height:1.25;overflow-wrap:anywhere;background:var(--hi);border:2px solid var(--ink);border-bottom:5px solid var(--edge)}
+.me .b{background:var(--ink);color:var(--bg);border-bottom-color:#2e2d2d}
+.b.img{padding:3px}
+.ph{position:relative;max-width:100%;overflow:hidden;background:var(--mid)}
+.ph.ok{background:none}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.ph.ok img{opacity:1}
+#typ{flex:none;padding:0 16px 6px}
+#typ[hidden]{display:none}
+#typ small{display:block;font-size:12px;color:var(--sub);margin-bottom:3px}
+.dots{display:inline-flex;gap:6px;padding:10px 12px;background:var(--hi);border:2px solid var(--ink);border-bottom-width:5px;border-bottom-color:var(--edge)}
+.dots i{width:8px;height:8px;background:var(--ink);animation:blink .7s steps(2) infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+form.c{flex:none;display:flex;gap:8px;padding:10px 12px calc(var(--bot) + 12px);border-top:2px dotted var(--mid)}
+.fld,#t,#login input{width:100%;font:inherit;font-size:17px;border:2px solid var(--ink);background:var(--hi);color:var(--ink);padding:11px 12px;outline:0;border-radius:0;margin-bottom:12px}
+#t{flex:1;min-width:0;margin:0}
+#go{background:var(--ink);color:var(--bg)}
+#bn{position:fixed;z-index:30;left:12px;right:12px;top:calc(var(--top) + 8px);display:flex;gap:10px;align-items:center;padding:10px;background:var(--hi);border:2px solid var(--ink);border-bottom:6px solid var(--edge);transform:translateY(-160%);transition:transform .25s steps(5)}
+#bn.show{transform:none}
+.pb{height:140px;border:2px solid var(--ink);background:repeating-conic-gradient(var(--mid) 0 25%,var(--bg) 0 50%) 0 0/16px 16px;background-size:cover;background-position:center}
+.pa{width:88px;height:88px;margin:-44px 0 0 14px;position:relative;border-width:3px}
+.pn{font-size:26px;font-weight:600;margin-top:8px}
+.pu{color:var(--sub);font-size:14px}
+.bio{margin:12px 0;padding:10px;border:2px dotted var(--mid);min-height:60px;white-space:pre-wrap}
+#pbox{flex:1;overflow-y:auto;padding:14px}
+#lb{position:fixed;inset:0;z-index:40;background:#000d;display:flex;align-items:center;justify-content:center;padding:var(--top) 10px var(--bot)}
+#lb[hidden]{display:none}
+#lb img{max-width:100%;max-height:100%;border:3px solid var(--bg)}
+#login{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:calc(var(--top) + 24px) 28px 28px}
+#login[hidden]{display:none}
+#login h2{font-size:56px;margin:0 0 16px;letter-spacing:4px}
+#err{min-height:1.3em;margin:0 0 8px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<div id="app">
+ <div id="hud"><div><span class="coin"></span><b id="cnt">0</b></div><div><div id="hearts"></div><div id="dots"><i></i><i></i><i></i></div></div><button id="gear" aria-label="Settings">II</button></div>
+ <nav id="tabs"><button class="tab on" data-v="chats">CHATS</button><button class="tab" data-v="servers">SERVERS</button><button class="tab" data-v="me">ME</button><button class="tab" data-v="set">SET</button></nav>
+ <main id="panel">
+  <section class="view on" id="v-chats"><div class="ttl" id="ct">CHATS</div><div id="rl"></div></section>
+  <section class="view" id="v-servers"><div class="ttl">SERVERS</div><div class="grid" id="sg"></div><p class="sub" id="sh"></p></section>
+  <section class="view" id="v-me"></section>
+  <section class="view" id="v-set"><div class="ttl">SETTINGS</div>
+   <button class="row" id="al">TURN ON ALERTS</button>
+   <div class="row" style="opacity:.6">ENCRYPTION: LOCKED ROOMS ARE READ-ONLY</div>
+   <button class="row" id="out">LOG OUT</button></section>
+ </main>
+</div>
+<div class="ov" id="chat">
+ <div class="ch"><button class="sq" id="bk" aria-label="Back">&lt;</button><div id="cav"></div><div class="t"><b id="ctitle"></b></div></div>
+ <div id="msgs"></div>
+ <div id="typ" hidden><small></small><div class="dots"><i></i><i></i><i></i></div></div>
+ <form class="c" id="f"><button type="button" class="sq" id="at" aria-label="Attach image">+</button><input id="t" placeholder="Type a message" autocomplete="off" enterkeyhint="send"><button class="sq" id="go" aria-label="Send">&gt;</button></form>
+</div>
+<div class="ov" id="prof"><div class="ch"><button class="sq" id="pk" aria-label="Back">&lt;</button><div class="t"><b>PROFILE</b></div></div><div id="pbox"></div></div>
+<div id="bn"></div>
+<input id="pf" type="file" accept="image/*" hidden>
+<div id="lb" hidden><img alt=""></div>
+<div id="login" hidden>
+ <h2>GOO</h2>
+ <input id="hs" placeholder="Homeserver (matrix.org)" autocapitalize="off" autocorrect="off" value="matrix.org">
+ <input id="u" placeholder="Username" autocapitalize="off" autocorrect="off">
+ <input id="p" type="password" placeholder="Password">
+ <p id="err"></p>
+ <button class="row" id="in" style="justify-content:center">LOG IN</button>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s),enc=encodeURIComponent;
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const nm=u=>u.split(':')[0].slice(1);
+const col=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return`hsl(${h} 14% 50%)`};
+let S=null,rooms={},cur=null,since=null,filt=null,errs=0,bnT;
+try{S=JSON.parse(localStorage.getItem('goo'))}catch{}
+const api=async(p,o={})=>{const r=await fetch(S.hs+'/_matrix/client/v3'+p,{...o,headers:{Authorization:'Bearer '+S.token,'Content-Type':'application/json'}});if(!r.ok)throw r;return r.json()};
+const put=(p,b)=>api(p,{method:'PUT',body:JSON.stringify(b)});
+
+// media + avatars + profiles
+const media={};
+async function mxc(u,sz){
+ const k=u+sz;if(media[k])return media[k];
+ const[,sv,id]=u.match(/^mxc:\/\/([^/]+)\/(.+)$/)||[];if(!id)throw 0;
+ const q=sz?'thumbnail':'download',p=sz?`?width=${sz}&height=${sz}&method=scale`:'';
+ let r=await fetch(`${S.hs}/_matrix/client/v1/media/${q}/${sv}/${id}${p}`,{headers:{Authorization:'Bearer '+S.token}});
+ if(!r.ok)r=await fetch(`${S.hs}/_matrix/media/v3/${q}/${sv}/${id}${p}`);
+ if(!r.ok)throw 0;
+ return media[k]=URL.createObjectURL(await r.blob());
+}
+function av(url,name,sz){
+ name=name||'?';const b=el('div','av',name[0].toUpperCase());
+ b.style.cssText=`width:${sz}px;height:${sz}px;background-color:${col(name)};font-size:${sz*.45}px`;
+ if(url)mxc(url,sz*2).then(u=>{b.style.backgroundImage=`url(${u})`;b.textContent=''}).catch(()=>{});
+ return b;
+}
+const profs={},prof=u=>profs[u]??=api('/profile/'+enc(u)).catch(()=>({}));
+async function upload(f,max){
+ const bm=await createImageBitmap(f),k=Math.min(1,max/Math.max(bm.width,bm.height)),w=Math.round(bm.width*k),h=Math.round(bm.height*k),cv=el('canvas');
+ cv.width=w;cv.height=h;cv.getContext('2d').drawImage(bm,0,0,w,h);
+ const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.85)),name=(f.name||'photo').replace(/\.\w+$/,'')+'.jpg';
+ const r=await fetch(`${S.hs}/_matrix/media/v3/upload?filename=${enc(name)}`,{method:'POST',headers:{Authorization:'Bearer '+S.token,'Content-Type':'image/jpeg'},body:blob});
+ if(!r.ok)throw 0;return{uri:(await r.json()).content_uri,w,h,name,size:blob.size};
+}
+function pick(cb,max=1024){const f=$('#pf');f.onchange=async()=>{const x=f.files[0];f.value='';if(!x)return;toast('Uploading...');try{await cb(await upload(x,max));toast('Done')}catch{toast('Upload failed')}};f.click()}
+function toast(msg){const b=$('#bn');b.onclick=null;b.innerHTML='';b.append(el('div','t',msg));b.classList.add('show');clearTimeout(bnT);bnT=setTimeout(()=>b.classList.remove('show'),2500)}
+function banner(R,e){
+ const b=$('#bn'),t=el('div','t');b.innerHTML='';
+ t.append(el('b','',R.name),el('span','',nm(e.sender)+': '+(e.content.body||'').slice(0,60)));
+ b.append(av(R.av,R.name,40),t);b.onclick=()=>{b.classList.remove('show');openChat(R.id)};
+ b.classList.add('show');clearTimeout(bnT);bnT=setTimeout(()=>b.classList.remove('show'),3800);
+}
+
+// profiles
+async function custom(k,v){
+ try{await put(`/profile/${enc(S.uid)}/${k}`,{[k]:v})}catch{
+  const u=`/user/${enc(S.uid)}/account_data/im.goo.profile`,d=await api(u).catch(()=>({}));
+  d[k]=v;await put(u,d);toast('Server hides custom fields. Only you see this.');
+ }
+}
+async function renderProf(box,uid,edit){
+ box.innerHTML='';const p=await prof(uid);let bio=p['im.goo.bio'],ban=p['im.goo.banner'];
+ if(edit&&(bio==null||ban==null)){try{const d=await api(`/user/${enc(uid)}/account_data/im.goo.profile`);bio??=d['im.goo.bio'];ban??=d['im.goo.banner']}catch{}}
+ const name=p.displayname||nm(uid),bn=el('div','pb'),pa=av(p.avatar_url,name,88);pa.classList.add('pa');
+ if(ban)mxc(ban,700).then(u=>bn.style.backgroundImage=`url(${u})`).catch(()=>{});
+ box.append(bn,pa);
+ if(!edit){box.append(el('div','pn',name),el('div','pu',uid),el('div','bio',bio||'No bio yet.'));return}
+ const dn=el('input','fld'),bi=el('textarea','fld'),btn=(x,fn)=>{const b=el('button','row',x);b.onclick=fn;return b},re=()=>{delete profs[uid];renderProf(box,uid,true)};
+ dn.value=name;dn.maxLength=60;bi.value=bio||'';bi.rows=4;bi.maxLength=300;bi.placeholder='Bio';dn.style.marginTop='14px';
+ box.append(dn,bi,
+  btn('CHANGE AVATAR',()=>pick(async r=>{await put(`/profile/${enc(uid)}/avatar_url`,{avatar_url:r.uri});re()})),
+  btn('CHANGE BANNER',()=>pick(async r=>{await custom('im.goo.banner',r.uri);re()},1200)),
+  btn('SAVE NAME + BIO',async()=>{try{await put(`/profile/${enc(uid)}/displayname`,{displayname:dn.value.trim()||nm(uid)});await custom('im.goo.bio',bi.value);toast('Saved');re()}catch{toast('Save failed')}}));
+}
+function openProf(u){$('#prof').classList.add('open');renderProf($('#pbox'),u,false)}
+
+// views
+function go(v){
+ $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+ $$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+ if(v==='me')renderProf($('#v-me'),S.uid,true);if(v==='servers')drawServers();if(v==='chats')drawChats();
+}
+function hud(){
+ const n=Object.values(rooms).reduce((a,r)=>a+r.unread,0),h=3-Math.min(errs,3);
+ $('#cnt').textContent=n;$('#hearts').innerHTML=[0,1,2].map(i=>`<i class="${i<h?'':'x'}">&#9829;</i>`).join('');
+ try{n?navigator.setAppBadge?.(n):navigator.clearAppBadge?.()}catch{}
+}
+function drawChats(){
+ const L=$('#rl');L.innerHTML='';
+ const list=Object.values(rooms).filter(R=>!R.space&&(!filt||rooms[filt]?.kids.has(R.id))).sort((a,b)=>b.ts-a.ts);
+ $('#ct').textContent=filt&&rooms[filt]?rooms[filt].name.toUpperCase():'CHATS';
+ if(!list.length)L.append(el('p','sub','Nothing here yet.'));
+ for(const R of list){
+  const b=el('button','row'),t=el('div','t');
+  t.append(el('b','',R.name+(R.enc?' [E2E]':'')),el('span','',R.last||'...'));
+  b.append(av(R.av,R.name,48),t);if(R.unread)b.append(el('div','n',R.unread));
+  b.onclick=()=>openChat(R.id);L.append(b);
+ }
+}
+function drawServers(){
+ const g=$('#sg');g.innerHTML='';let n=0;
+ const add=(id,name,url)=>{const b=el('button','srv'+(filt===id?' on':''));b.append(av(url,name,56),el('span','',name));b.onclick=()=>{filt=id;go('chats')};g.append(b)};
+ add(null,'ALL');
+ for(const R of Object.values(rooms))if(R.space){add(R.id,R.name,R.av);n++}
+ $('#sh').textContent=n?'':'Join a Matrix Space to see servers here.';
+}
+function openChat(id){
+ cur=id;const R=rooms[id];R.unread=0;
+ $('#ctitle').textContent=R.name;$('#cav').replaceChildren(av(R.av,R.name,40));
+ $('#msgs').innerHTML='';R.ev.forEach(e=>add(e,false));
+ $('#t').disabled=!!R.enc;$('#t').placeholder=R.enc?'Encrypted room: read only':'Type a message';
+ $('#chat').classList.add('open');$('#bn').classList.remove('show');hud();drawChats();drawTyping();bottom();
+}
+function closeChat(){cur=null;$('#chat').classList.remove('open');drawChats();drawTyping()}
+
+// messages
+const nearBottom=()=>{const m=$('#msgs');return m.scrollHeight-m.scrollTop-m.clientHeight<160};
+const bottom=smooth=>$('#msgs').scrollTo({top:1e9,behavior:smooth?'smooth':'auto'});
+function zoom(u,t){const l=$('#lb'),i=l.firstChild;i.src=t;l.hidden=false;mxc(u,0).then(f=>{if(!l.hidden)i.src=f}).catch(()=>{})}
+function add(e,anim){
+ const me=e.sender===S.uid,m=el('div','m'+(me?' me':'')+(anim?' pop':'')),c=e.content,near=nearBottom(),w=el('div','w'),b=el('div','b');
+ m.dataset.u=e.sender;
+ if(!me){
+  let a=av(null,nm(e.sender),32);const s=el('small','',nm(e.sender));
+  prof(e.sender).then(p=>{if(p.displayname)s.textContent=p.displayname;const a2=av(p.avatar_url,p.displayname||nm(e.sender),32);a.replaceWith(a2);a=a2});
+  m.append(a);w.append(s);
+ }
+ if(c.msgtype==='m.image'&&typeof c.url==='string'){
+  const i=c.info||{},iw=i.w||4,ih=i.h||3,ph=el('div','ph'),im=new Image();
+  b.classList.add('img');ph.style.cssText=`width:${Math.min(iw,260)}px;aspect-ratio:${iw}/${ih}`;
+  im.alt=c.body||'Image';ph.append(im);b.append(ph);
+  mxc(c.url,520).then(u=>{im.onload=()=>{ph.classList.add('ok');if(near||anim)bottom(1)};im.onclick=()=>zoom(c.url,u);im.src=u}).catch(()=>{b.classList.remove('img');b.textContent='Image unavailable'});
+ }else b.textContent=c.body;
+ w.append(b);m.append(w);$('#msgs').append(m);bottom(anim);
+}
+function drawTyping(){
+ const t=cur&&rooms[cur].typing||[],e=$('#typ'),nb=nearBottom();
+ e.hidden=!t.length;document.body.classList.toggle('typing-on',t.length>0);
+ if(!t.length)return;
+ const n=t.map(nm);e.firstChild.textContent=n.length>2?'Several people are typing':n.join(' and ')+(n.length>1?' are':' is')+' typing';
+ if(nb)bottom(1);
+}
+let tTimer,tLast=0;
+const typing=on=>{if(cur)put(`/rooms/${enc(cur)}/typing/${enc(S.uid)}`,on?{typing:true,timeout:6000}:{typing:false}).catch(()=>{})};
+
+// auth + sync
+async function login(){
+ let hs=$('#hs').value.trim().replace(/\/$/,'');if(!/^https?:/.test(hs))hs='https://'+hs;$('#err').textContent='';
+ try{
+  const r=await fetch(hs+'/_matrix/client/v3/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'m.login.password',identifier:{type:'m.id.user',user:$('#u').value.trim()},password:$('#p').value,initial_device_display_name:'Goo'})});
+  const d=await r.json();if(!r.ok)throw d.error||'Login failed';
+  S={hs,token:d.access_token,uid:d.user_id};try{localStorage.setItem('goo',JSON.stringify(S))}catch{}start();
+ }catch(e){$('#err').textContent=String(e).includes('fetch')?'Cannot reach that homeserver.':e}
+}
+function logout(){S=null;since=null;rooms={};cur=null;filt=null;try{localStorage.removeItem('goo')}catch{}$('#chat').classList.remove('open');$('#login').hidden=false;go('chats')}
+function start(){$('#login').hidden=true;hud();loop()}
+async function loop(){
+ const f=enc(JSON.stringify({room:{timeline:{limit:30},ephemeral:{types:['m.typing']},state:{types:['m.room.name','m.room.canonical_alias','m.room.avatar','m.room.create','m.room.encryption','m.space.child']}}}));
+ while(S){
+  try{
+   const d=await api('/sync?timeout=25000&filter='+f+(since?'&since='+since:''));
+   const first=!since;since=d.next_batch;errs=0;
+   for(const[id,r]of Object.entries(d.rooms?.join||{})){
+    const R=rooms[id]??={id,name:id.slice(0,10),ev:[],unread:0,typing:[],kids:new Set(),ts:0};
+    for(const e of [...(r.state?.events||[]),...(r.timeline?.events||[])]){
+     const c=e.content||{};
+     if(e.type==='m.room.name'&&c.name){R.name=c.name;R.named=1}
+     else if(e.type==='m.room.canonical_alias'&&!R.named&&c.alias)R.name=c.alias;
+     else if(e.type==='m.room.avatar')R.av=c.url;
+     else if(e.type==='m.room.create')R.space=c.type==='m.space';
+     else if(e.type==='m.room.encryption')R.enc=1;
+     else if(e.type==='m.space.child'){c.via?R.kids.add(e.state_key):R.kids.delete(e.state_key)}
+    }
+    for(const e of r.ephemeral?.events||[])if(e.type==='m.typing'){R.typing=(e.content.user_ids||[]).filter(x=>x!==S.uid);if(id===cur)drawTyping()}
+    for(let e of r.timeline?.events||[]){
+     if(e.type==='m.room.encrypted'){R.enc=1;e={sender:e.sender,origin_server_ts:e.origin_server_ts,content:{msgtype:'m.text',body:'[encrypted message]'}}}
+     else if(e.type!=='m.room.message'||!e.content.body)continue;
+     R.ev.push(e);R.ts=e.origin_server_ts;R.last=e.content.msgtype==='m.image'?'[image]':e.content.body;
+     if(id===cur&&!first)add(e,true);
+     if(!first&&e.sender!==S.uid){
+      if(id!==cur||document.hidden)R.unread++;
+      if(id!==cur&&!document.hidden)banner(R,e);
+      const h=$('#hearts');h.classList.remove('bump');void h.offsetWidth;h.classList.add('bump');
+     }
+    }
+   }
+   if(first&&!$('#v-servers').classList.contains('on'))drawChats();else{drawChats();drawServers()}
+   hud();
+  }catch(e){
+   if(e.status===401){logout();return}
+   errs++;hud();await new Promise(r=>setTimeout(r,3000));
+  }
+ }
+}
+
+// events
+$('#in').onclick=login;
+$$('.tab').forEach(t=>t.onclick=()=>go(t.dataset.v));
+$('#gear').onclick=()=>go('set');
+$('#bk').onclick=closeChat;
+$('#pk').onclick=()=>$('#prof').classList.remove('open');
+$('#lb').onclick=()=>$('#lb').hidden=true;
+$('#out').onclick=logout;
+$('#al').onclick=async()=>{try{toast(await Notification.requestPermission()==='granted'?'Alerts on':'Alerts blocked')}catch{toast('Add to Home Screen first')}};
+$('#msgs').onclick=ev=>{const m=ev.target.closest('.m');if(m&&ev.target.closest('.av,small'))openProf(m.dataset.u)};
+$('#t').oninput=()=>{const n=Date.now();if(n-tLast>4000){tLast=n;typing(true)}clearTimeout(tTimer);tTimer=setTimeout(()=>{tLast=0;typing(false)},5000)};
+$('#at').onclick=()=>{const id=cur;if(rooms[id]?.enc)return toast('Encrypted room');pick(r=>put(`/rooms/${enc(id)}/send/m.room.message/${Date.now()}`,{msgtype:'m.image',body:r.name,url:r.uri,info:{mimetype:'image/jpeg',size:r.size,w:r.w,h:r.h}}),1600)};
+$('#f').onsubmit=async ev=>{
+ ev.preventDefault();const t=$('#t').value.trim();if(!t||!cur||rooms[cur].enc)return;$('#t').value='';clearTimeout(tTimer);tLast=0;typing(false);
+ try{await put(`/rooms/${enc(cur)}/send/m.room.message/${Date.now()}`,{msgtype:'m.text',body:t})}catch{$('#t').value=t;toast('Send failed')}
+};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cur){rooms[cur].unread=0;hud()}});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+S?start():$('#login').hidden=false;
+</script>
+</body></html>

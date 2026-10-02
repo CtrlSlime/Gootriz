@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Goo">
+<meta name="theme-color" content="#0c1a10">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Goo</title>
+<style>
+:root{--top:env(safe-area-inset-top,0px);--bot:env(safe-area-inset-bottom,0px);
+--bog:#0c1a10;--moss:#1c3524;--slime:#2fb04a;--lime:#92ff6e;--mist:#e9ffe6;
+font-family:Fredoka,ui-rounded,"SF Pro Rounded",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bog);color:var(--mist);overscroll-behavior:none}
+#app{height:100dvh;display:flex;flex-direction:column;position:relative}
+header{position:relative;flex:none;padding:calc(var(--top) + 46px) 16px 8px}
+#goo{position:absolute;inset:0 0 auto 0;height:calc(var(--top) + 100px);filter:url(#gooF);pointer-events:none;z-index:1}
+.slab{position:absolute;left:-12px;right:-12px;top:-24px;height:calc(var(--top) + 36px);background:var(--slime)}
+.d,.drop{position:absolute;border-radius:50%;background:var(--slime)}
+.d{top:calc(var(--top) + 2px);animation:drip var(--t) ease-in-out infinite alternate}
+.drop{left:50%;top:14px;width:30px;height:30px}
+@keyframes drip{to{transform:translateY(var(--y)) scaleY(1.3)}}
+#island{display:none;position:absolute;z-index:3;top:11px;left:50%;width:126px;height:37px;border-radius:20px;background:#000;transform:translateX(-50%)}
+.on-island #island{display:block}
+header>*{position:relative;z-index:2}
+h1{margin:0 0 8px;font-size:22px;font-weight:600;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+#chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:0;font:inherit;font-size:15px;color:var(--mist);background:var(--moss);padding:8px 16px;border-radius:999px 999px 999px 999px/ 60% 60% 60% 60%;transition:transform .35s cubic-bezier(.34,1.8,.5,1),background .2s}
+.chip:active{transform:scale(1.12,.86)}
+.chip.on{background:var(--lime);color:var(--bog);font-weight:500}
+.chip i{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:var(--lime);color:var(--bog);font-size:12px;font-style:normal}
+#msgs{flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
+.m{display:flex;flex-direction:column;max-width:80%;align-self:flex-start}
+.m.me{align-self:flex-end;align-items:flex-end}
+.m small{font-size:12px;opacity:.6;margin:0 12px 2px}
+.b{padding:10px 16px;font-size:17px;line-height:1.3;overflow-wrap:anywhere;background:var(--moss);border-radius:24px 24px 24px 8px;transition:transform .4s cubic-bezier(.34,1.9,.5,1);transform-origin:bottom left}
+.me .b{background:var(--lime);color:var(--bog);border-radius:24px 24px 8px 24px;transform-origin:bottom right}
+.b:active{transform:scale(1.07,.9)}
+.m.pop .b{animation:pop .7s cubic-bezier(.3,1.4,.5,1)}
+@keyframes pop{0%{transform:scale(.2,.4) translateY(30px)}45%{transform:scale(1.14,.88)}70%{transform:scale(.95,1.06)}100%{transform:none}}
+form.c{flex:none;display:flex;gap:10px;padding:8px 12px calc(var(--bot) + 10px)}
+#t{flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:17px;color:var(--mist);background:var(--moss);padding:12px 20px;border-radius:26px}
+#t:focus{box-shadow:0 0 0 2px var(--lime)}
+#go{flex:none;width:48px;height:48px;border:0;border-radius:50%;background:var(--lime);color:var(--bog);font-size:22px;transition:transform .4s cubic-bezier(.34,2,.5,1)}
+#go:active{transform:scale(1.25,.75)}
+#login{position:fixed;inset:0;z-index:9;background:var(--bog);display:flex;flex-direction:column;justify-content:center;gap:12px;padding:calc(var(--top) + 24px) 28px 28px}
+#login[hidden]{display:none}
+#login h2{font-size:44px;margin:0 0 8px;color:var(--lime)}
+#login input{border:0;outline:0;font:inherit;font-size:17px;color:var(--mist);background:var(--moss);padding:14px 20px;border-radius:26px}
+#login button{border:0;font:inherit;font-size:18px;font-weight:600;padding:14px;border-radius:26px;background:var(--lime);color:var(--bog);transition:transform .4s cubic-bezier(.34,2,.5,1)}
+#login button:active{transform:scale(1.06,.88)}
+#err{min-height:1.3em;color:#ffb4a8;margin:0}
+
+.b.img{padding:4px}
+.ph{position:relative;max-width:100%;border-radius:20px;overflow:hidden;background:linear-gradient(110deg,#ffffff12 30%,#ffffff30 50%,#ffffff12 70%) 0 0/200% 100%;animation:shim 1.2s linear infinite}
+.ph.ok{animation:none;background:none}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
+.ph.ok img{opacity:1}
+@keyframes shim{to{background-position:-200% 0}}
+#typ{flex:none;padding:0 16px 4px}
+#typ[hidden]{display:none}
+#typ small{display:block;font-size:12px;opacity:.6;margin:0 12px 2px}
+.dots{display:inline-flex;gap:5px;padding:12px 16px;background:var(--moss);border-radius:24px 24px 24px 8px;transform-origin:bottom left;animation:pop .6s cubic-bezier(.3,1.4,.5,1)}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--lime);animation:bob 1s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bob{50%{transform:translateY(-6px) scale(1.2,.85)}}
+@keyframes breathe{50%{transform:translateX(-50%) scale(1.07,.93)}}
+.typing-on #island{animation:breathe 1.1s ease-in-out infinite}
+#at{flex:none;width:48px;height:48px;border:0;border-radius:50%;background:var(--moss);color:var(--lime);font:inherit;font-size:28px;line-height:1;transition:transform .4s cubic-bezier(.34,2,.5,1)}
+#at:active{transform:scale(1.25,.75)}
+#lb{position:fixed;inset:0;z-index:20;background:#000d;display:flex;align-items:center;justify-content:center;padding:calc(var(--top) + 10px) 10px calc(var(--bot) + 10px)}
+#lb[hidden]{display:none}
+#lb img{max-width:100%;max-height:100%;border-radius:20px;animation:pop .5s cubic-bezier(.3,1.4,.5,1)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><filter id="gooF"><feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/><feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8"/></filter></svg>
+<div id="pr" style="position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top)"></div>
+<div id="app">
+  <header>
+    <div id="goo"><div class="slab"></div></div>
+    <div id="island"></div>
+    <h1 id="title">Goo</h1>
+    <div id="chips"></div>
+  </header>
+  <div id="msgs" aria-live="polite"></div>
+  <div id="typ" hidden><small></small><div class="dots"><i></i><i></i><i></i></div></div>
+  <form class="c" id="f"><button type="button" id="at" aria-label="Attach image">+</button><input id="fi" type="file" accept="image/*" hidden><input id="t" placeholder="Say something gooey" autocomplete="off" enterkeyhint="send"><button id="go" aria-label="Send">&#10148;</button></form>
+</div>
+<div id="lb" hidden><img alt=""></div>
+<div id="login" hidden>
+  <h2>goo</h2>
+  <input id="hs" placeholder="Homeserver (matrix.org)" autocapitalize="off" autocorrect="off" value="matrix.org">
+  <input id="u" placeholder="Username" autocapitalize="off" autocorrect="off">
+  <input id="p" type="password" placeholder="Password">
+  <p id="err"></p>
+  <button id="in">Log in</button>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+let S=null,rooms={},cur=null,since=null;
+try{S=JSON.parse(localStorage.getItem('goo'))}catch{}
+
+// Dynamic Island detection + slime drips
+if(parseFloat(getComputedStyle($('#pr')).paddingTop)>=51)document.body.classList.add('on-island');
+for(let i=0;i<9;i++){const d=document.createElement('div'),s=14+Math.random()*14;
+ d.className='d';d.style.cssText=`left:${5+i*11+Math.random()*5}%;width:${s}px;height:${s}px;--y:${6+Math.random()*16}px;--t:${2+Math.random()*3}s;animation-delay:-${Math.random()*3}s`;
+ $('#goo').append(d)}
+
+function plop(){
+ const d=document.createElement('div');d.className='drop';$('#goo').append(d);
+ d.animate([{transform:'translate(-50%,0) scale(.5)'},{transform:'translate(-50%,70px) scale(1.1)',offset:.6},{transform:'translate(-50%,125px) scale(.2)',opacity:0}],{duration:1100,easing:'cubic-bezier(.4,0,.6,1)'}).onfinish=()=>d.remove();
+ $('#island').animate([{transform:'translateX(-50%)'},{transform:'translateX(-50%) scale(1.14,.88)'},{transform:'translateX(-50%) scale(.97,1.05)'},{transform:'translateX(-50%)'}],{duration:600});
+}
+
+const api=async(p,o={})=>{const r=await fetch(S.hs+'/_matrix/client/v3'+p,{...o,headers:{Authorization:'Bearer '+S.token,'Content-Type':'application/json'}});if(!r.ok)throw r;return r.json()};
+
+async function login(){
+ let hs=$('#hs').value.trim().replace(/\/$/,'');if(!/^https?:/.test(hs))hs='https://'+hs;
+ $('#err').textContent='';
+ try{
+  const r=await fetch(hs+'/_matrix/client/v3/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'m.login.password',identifier:{type:'m.id.user',user:$('#u').value.trim()},password:$('#p').value,initial_device_display_name:'Goo'})});
+  const d=await r.json();if(!r.ok)throw d.error||'Login failed';
+  S={hs,token:d.access_token,uid:d.user_id};
+  try{localStorage.setItem('goo',JSON.stringify(S))}catch{}
+  start();
+ }catch(e){$('#err').textContent=String(e).includes('Failed to fetch')?'Cannot reach that homeserver. Check the address.':e}
+}
+function logout(){S=null;since=null;rooms={};cur=null;try{localStorage.removeItem('goo')}catch{}$('#login').hidden=false;$('#msgs').innerHTML='';$('#chips').innerHTML=''}
+
+const nearBottom=()=>{const m=$('#msgs');return m.scrollHeight-m.scrollTop-m.clientHeight<160};
+const bottom=smooth=>$('#msgs').scrollTo({top:1e9,behavior:smooth?'smooth':'auto'});
+const media={};
+async function mxc(u,thumb){
+ const k=u+(thumb?'t':'f');if(media[k])return media[k];
+ const[,sv,id]=u.match(/^mxc:\/\/([^/]+)\/(.+)$/)||[];if(!id)throw 0;
+ const q=thumb?'thumbnail':'download',p=thumb?'?width=520&height=520&method=scale':'';
+ let r=await fetch(`${S.hs}/_matrix/client/v1/media/${q}/${sv}/${id}${p}`,{headers:{Authorization:'Bearer '+S.token}});
+ if(!r.ok)r=await fetch(`${S.hs}/_matrix/media/v3/${q}/${sv}/${id}${p}`);
+ if(!r.ok)throw 0;
+ return media[k]=URL.createObjectURL(await r.blob());
+}
+function zoom(u,t){const l=$('#lb'),i=l.firstChild;i.src=t;l.hidden=false;mxc(u,0).then(f=>{if(!l.hidden)i.src=f}).catch(()=>{})}
+function add(e,anim){
+ const me=e.sender===S.uid,m=document.createElement('div'),c=e.content,near=nearBottom();
+ m.className='m'+(me?' me':'')+(anim?' pop':'');
+ if(!me){const s=document.createElement('small');s.textContent=e.sender.split(':')[0].slice(1);m.append(s)}
+ const b=document.createElement('div');b.className='b';
+ if(c.msgtype==='m.image'&&typeof c.url==='string'){
+  const i=c.info||{},w=i.w||4,h=i.h||3,ph=document.createElement('div'),im=new Image();
+  b.classList.add('img');ph.className='ph';ph.style.cssText=`width:${Math.min(w,260)}px;aspect-ratio:${w}/${h}`;
+  im.alt=c.body||'Image';ph.append(im);b.append(ph);
+  mxc(c.url,1).then(u=>{im.onload=()=>{ph.classList.add('ok');if(near||anim)bottom(1)};im.onclick=()=>zoom(c.url,u);im.src=u})
+   .catch(()=>{b.classList.remove('img');b.textContent='Image unavailable'});
+ }else b.textContent=c.body;
+ m.append(b);$('#msgs').append(m);bottom(anim);
+}
+function drawTyping(){
+ const t=cur&&rooms[cur].typing||[],el=$('#typ'),nb=nearBottom();
+ el.hidden=!t.length;document.body.classList.toggle('typing-on',t.length>0);
+ if(!t.length)return;
+ const n=t.map(x=>x.split(':')[0].slice(1));
+ el.firstChild.textContent=n.length>2?'Several people are typing':n.join(' and ')+(n.length>1?' are':' is')+' typing';
+ if(nb)bottom(1);
+}
+let tTimer,tLast=0;
+function typing(on){if(!cur)return;api(`/rooms/${encodeURIComponent(cur)}/typing/${encodeURIComponent(S.uid)}`,{method:'PUT',body:JSON.stringify(on?{typing:true,timeout:6000}:{typing:false})}).catch(()=>{})}
+$('#t').oninput=()=>{const n=Date.now();if(n-tLast>4000){tLast=n;typing(true)}clearTimeout(tTimer);tTimer=setTimeout(()=>{tLast=0;typing(false)},5000)};
+function hint(msg){const t=$('#t'),o=t.placeholder;t.placeholder=msg;setTimeout(()=>t.placeholder=o,2500)}
+$('#at').onclick=()=>$('#fi').click();
+$('#fi').onchange=async ev=>{
+ const f=ev.target.files[0];ev.target.value='';if(!f||!cur)return;const id=cur;hint('Uploading image...');
+ try{
+  const bm=await createImageBitmap(f),k=Math.min(1,1600/Math.max(bm.width,bm.height)),w=Math.round(bm.width*k),h=Math.round(bm.height*k);
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(bm,0,0,w,h);
+  const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.85)),name=(f.name||'photo').replace(/\.\w+$/,'')+'.jpg';
+  const up=await fetch(`${S.hs}/_matrix/media/v3/upload?filename=${encodeURIComponent(name)}`,{method:'POST',headers:{Authorization:'Bearer '+S.token,'Content-Type':'image/jpeg'},body:blob});
+  if(!up.ok)throw 0;const{content_uri}=await up.json();
+  await api(`/rooms/${encodeURIComponent(id)}/send/m.room.message/${Date.now()}`,{method:'PUT',body:JSON.stringify({msgtype:'m.image',body:name,url:content_uri,info:{mimetype:'image/jpeg',size:blob.size,w,h}})});
+ }catch{hint('Image could not be sent')}
+};
+function show(id){
+ cur=id;const R=rooms[id];R.unread=0;$('#title').textContent=R.name;
+ $('#msgs').innerHTML='';R.ev.forEach(e=>add(e,false));drawChips();badge();drawTyping();
+}
+function drawChips(){
+ const c=$('#chips');c.innerHTML='';
+ for(const[id,R]of Object.entries(rooms)){
+  const b=document.createElement('button');b.className='chip'+(id===cur?' on':'');b.textContent=R.name;
+  if(R.unread){const i=document.createElement('i');i.textContent=R.unread;b.append(i)}
+  b.onclick=()=>show(id);c.append(b);
+ }
+}
+function badge(){
+ const n=Object.values(rooms).reduce((a,r)=>a+r.unread,0);
+ try{n?navigator.setAppBadge?.(n):navigator.clearAppBadge?.()}catch{}
+}
+
+async function start(){$('#login').hidden=true;loop()}
+async function loop(){
+ const f=encodeURIComponent(JSON.stringify({room:{timeline:{limit:30},state:{types:['m.room.name','m.room.canonical_alias']},ephemeral:{types:['m.typing']}}}));
+ while(S){
+  try{
+   const d=await api('/sync?timeout=25000&filter='+f+(since?'&since='+since:''));
+   const first=!since;since=d.next_batch;
+   for(const[id,r]of Object.entries(d.rooms?.join||{})){
+    const R=rooms[id]??={name:id.slice(0,12),ev:[],unread:0,named:false,typing:[]};
+    for(const e of [...(r.state?.events||[]),...(r.timeline?.events||[])]){
+     if(e.type==='m.room.name'&&e.content.name){R.name=e.content.name;R.named=true}
+     else if(e.type==='m.room.canonical_alias'&&!R.named&&e.content.alias)R.name=e.content.alias;
+    }
+    for(const e of r.ephemeral?.events||[])if(e.type==='m.typing'){R.typing=(e.content.user_ids||[]).filter(x=>x!==S.uid);if(id===cur)drawTyping()}
+    for(const e of r.timeline?.events||[]){
+     if(e.type!=='m.room.message'||!e.content.body)continue;
+     R.ev.push(e);
+     if(id===cur&&!first)add(e,true);
+     if(!first&&e.sender!==S.uid){plop();if(id!==cur||document.hidden)R.unread++}
+    }
+   }
+   if(!cur)cur=Object.keys(rooms)[0];
+   if(first&&cur)show(cur);else{drawChips();badge()}
+  }catch(e){
+   if(e.status===401){logout();return}
+   await new Promise(r=>setTimeout(r,3000));
+  }
+ }
+}
+
+$('#in').onclick=login;
+$('#f').onsubmit=async ev=>{
+ ev.preventDefault();const t=$('#t').value.trim();if(!t||!cur)return;$('#t').value='';clearTimeout(tTimer);tLast=0;typing(false);
+ try{await api(`/rooms/${encodeURIComponent(cur)}/send/m.room.message/${Date.now()}`,{method:'PUT',body:JSON.stringify({msgtype:'m.text',body:t})})}catch{$('#t').value=t}
+};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cur){rooms[cur].unread=0;drawChips();badge()}});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+S?start():$('#login').hidden=false;
+</script>
+</body></html>
